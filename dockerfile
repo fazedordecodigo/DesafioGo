@@ -1,17 +1,15 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:alpine3.19
+FROM golang:alpine3.19 as build
 
-WORKDIR /app
+WORKDIR /go/src/app
 
-COPY go.mod ./
+COPY rocks.go .
 
-RUN go mod download
+RUN go build -ldflags '-s -w' rocks.go
 
-COPY *.go ./
+FROM scratch
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /simple-go-app
+COPY --from=build /go/src/app .
 
-EXPOSE 8080
-
-CMD ["/simple-go-app"]
+CMD [ "./rocks" ]
